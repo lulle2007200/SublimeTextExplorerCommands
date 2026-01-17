@@ -9,8 +9,9 @@
       "installDir": "install",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "CERT_PATH": "",
-        "CERT_PASSWORD": ""
+        "SIGNING_CERT_PATH": "",
+        "SIGNING_CERT_PASSWORD": "",
+        "ROOT_CERT_PATH": ""
       }
     },
     {

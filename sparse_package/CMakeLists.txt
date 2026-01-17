@@ -6,9 +6,11 @@ set(PACKAGE_NAME package)
 
 set(PACKAGE_DIR ${CMAKE_CURRENT_BINARY_DIR}/package)
 
-set(CERT_PATH "" CACHE FILEPATH "")
+set(SIGNING_CERT_PATH "" CACHE FILEPATH "")
 
-set(CERT_PASSWORD "" CACHE STRING "")
+set(SIGNING_CERT_PASSWORD "" CACHE STRING "")
+
+set(ROOT_CERT_PATH "" CACHE STRING "")
 
 set(MSIX_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}_unsigned.msix)
 
@@ -49,7 +51,7 @@ add_custom_target(make_msix
 
 add_custom_command(OUTPUT ${MSIX_OUTPUT_SIGNED}
                    COMMAND ${CMAKE_COMMAND} -E copy "${MSIX_OUTPUT}" "${MSIX_OUTPUT_SIGNED}"
-                   COMMAND signtool sign /fd SHA256 /a /f "${CERT_PATH}" /p "${CERT_PASSWORD}" "${MSIX_OUTPUT_SIGNED}"
+                   COMMAND signtool sign /fd SHA256 /a /f "${SIGNING_CERT_PATH}" /p "${SIGNING_CERT_PASSWORD}" "${MSIX_OUTPUT_SIGNED}"
                    DEPENDS ${MSIX_OUTPUT}
                    VERBATIM)
                    
@@ -61,3 +63,7 @@ add_custom_target(sublime_package ALL DEPENDS sign_msix prepare_external_files)
 
 install(FILES ${MSIX_OUTPUT_SIGNED} DESTINATION .)
 install(DIRECTORY ${MSIX_EXTERNAL_PATH} DESTINATION .)
+
+if(ROOT_CERT_PATH)
+    install(FILES ${ROOT_CERT_PATH} DESTINATION . RENAME root_ca.cer)
+endif()
