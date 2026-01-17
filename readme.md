@@ -1,0 +1,1 @@
+Windows explorer integration for Sublime Text
