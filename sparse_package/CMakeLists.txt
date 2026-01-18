@@ -23,7 +23,7 @@ set(MSIX_EXTERNAL_PATH ${CMAKE_CURRENT_BINARY_DIR}/external)
 # Prepare external files
 
 add_custom_target(copy_sublime_explorer_commands
-                  COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:sublime_explorer_commands>" "${MSIX_EXTERNAL_PATH}/$<TARGET_FILE_NAME:sublime_explorer_commands>"
+                  COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:sublime_explorer_commands>" "${MSIX_EXTERNAL_PATH}/msix/$<TARGET_FILE_NAME:sublime_explorer_commands>"
                   DEPENDS sublime_explorer_commands)
 
 add_custom_target(copy_resources
