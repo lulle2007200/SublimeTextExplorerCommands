@@ -23,7 +23,7 @@ static winrt::hstring GetSublimeTextPath() {
         LOG(L"GetModuleFileNameW failed");
         winrt::throw_last_error();
     }
-    std::filesystem::path sublime_path = std::filesystem::path(module_path.data()).parent_path().append("sublime_text.exe");
+    std::filesystem::path sublime_path = std::filesystem::path(module_path.data()).parent_path().parent_path().append("sublime_text.exe");
     return sublime_path.c_str();
 }
 
