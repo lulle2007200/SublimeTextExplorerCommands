@@ -15,7 +15,7 @@
 #define LOG(...)
 #endif
 
-static winrt::hstring GetSublimeTextPath() {
+static std::filesystem::path GetSublimeTextPath() {
     LOG(L"GetSublimeTextPath");
     std::array<wchar_t, MAX_PATH> module_path;
     auto res = GetModuleFileNameW(g_hinst, module_path.data(), module_path.size());
@@ -31,34 +31,42 @@ IFACEMETHODIMP OpenHere::Invoke(IShellItemArray* psiItemArray, IBindCtx*)
 {   
     LOG(L"Invoke");
     try {
-        auto location = GetSublimeTextPath();
+        auto exe_path = GetSublimeTextPath();
         winrt::com_ptr<IShellItemArray> items;
         items.copy_from(psiItemArray);
         winrt::com_ptr<IShellItem> item = GetLocation(items);
         if (item) {
-
             wil::unique_cotaskmem_string name;
             if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &name))) {
                 wil::unique_process_information process_info;
-                STARTUPINFOEXW startup_info{ 0 };
-                startup_info.StartupInfo.cb = sizeof(startup_info);
-                startup_info.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
-                startup_info.StartupInfo.wShowWindow = SW_SHOWNORMAL;
+                STARTUPINFOW startup_info{ 0 };
+                startup_info.cb = sizeof(startup_info);
+                startup_info.dwFlags = STARTF_USESHOWWINDOW;
+                startup_info.wShowWindow = SW_SHOWNORMAL;
 
-                std::wstring cmd_line = L"-n \"" + std::wstring(name.get()) + L"\"";
+                // std::wstring cmd_line = L"-n \"" + std::wstring(name.get()) + L"\"";
+                // if(reinterpret_cast<uintptr_t>(ShellExecuteW(nullptr, 
+                //                                L"open", 
+                //                                exe_path.filename().c_str(),
+                //                                cmd_line.data(),
+                //                                exe_path.parent_path().c_str(), 
+                //                                SW_SHOWNORMAL)) > 32) {
+                //     LOG(L"OK");
+                //     return S_OK;
+                // }
+                 
 
-                LOG(L"CreateProcessW");
-
-                if (CreateProcessW(location.data(),
-                    cmd_line.data(),
-                    nullptr,
-                    nullptr,
-                    false,
-                    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT,
-                    nullptr,
-                    nullptr,
-                    &startup_info.StartupInfo,
-                    &process_info)) {
+                std::wstring cmd_line = L"\"" + exe_path.wstring() + L"\" -n \"" + std::wstring(name.get()) + L"\"";
+                if (CreateProcessW(nullptr,
+                                   cmd_line.data(),
+                                   nullptr,
+                                   nullptr,
+                                   false,
+                                   CREATE_UNICODE_ENVIRONMENT,
+                                   nullptr,
+                                   exe_path.parent_path().c_str(),
+                                   &startup_info,
+                                   &process_info)) {
                     LOG(L"OK");
                     return S_OK;
                 }
@@ -110,7 +118,7 @@ IFACEMETHODIMP OpenHere::GetIcon(IShellItemArray*, LPWSTR* ppszIcon)
 {
     LOG(L"GetIcon");
     try {
-        auto location = GetSublimeTextPath() + L",-103";
+        auto location = GetSublimeTextPath();
         auto res = SHStrDupW(location.c_str(), ppszIcon);
         return res;
     } catch (...) {
@@ -128,7 +136,7 @@ IFACEMETHODIMP OpenHere::GetFlags(EXPCMDFLAGS* pFlags)
 
 IFACEMETHODIMP OpenHere::GetCanonicalName(GUID* pguidCommandName)
 {
-    *pguidCommandName = __uuidof(decltype(*this));
+    *pguidCommandName = __uuidof(*this);
     return S_OK;
 }
 
@@ -162,6 +170,9 @@ winrt::com_ptr<IShellItem> OpenHere::GetLocation(winrt::com_ptr<IShellItemArray>
     if (item_array) {
         DWORD count{};
         item_array->GetCount(&count);
+        if (count > 1) {
+            return item;
+        }
         if (count) {
             item_array->GetItemAt(0, item.put());
         }
