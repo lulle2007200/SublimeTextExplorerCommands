@@ -51,7 +51,7 @@ add_custom_target(make_msix
 
 add_custom_command(OUTPUT ${MSIX_OUTPUT_SIGNED}
                    COMMAND ${CMAKE_COMMAND} -E copy "${MSIX_OUTPUT}" "${MSIX_OUTPUT_SIGNED}"
-                   COMMAND signtool sign /fd SHA256 /a /f "${SIGNING_CERT_PATH}" /p "${SIGNING_CERT_PASSWORD}" "${MSIX_OUTPUT_SIGNED}"
+                   COMMAND signtool sign /fd SHA256 /a /f "${SIGNING_CERT_PATH}" /p "${SIGNING_CERT_PASSWORD}" /tr http://timestamp.digicert.com /td sha256 "${MSIX_OUTPUT_SIGNED}"
                    DEPENDS ${MSIX_OUTPUT}
                    VERBATIM)
                    
